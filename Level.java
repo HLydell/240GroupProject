@@ -36,8 +36,8 @@ public class Level extends JComponent implements GameEventListener{
         g.setFont(new Font(Font.DIALOG, Font.BOLD, 22));
         g.drawString("Level "+id, 360, 33);
         g.setFont(new Font(Font.DIALOG, Font.PLAIN, 14));
-        g.drawString("Best Score:  "+bestScore, 350, 55);
-        g.drawString("Current Score:  "+currentScore, 340, 72);
+        g.drawString("Best Score:  "+ bestScore, 350, 55);
+        g.drawString("Current Score:  "+ currentScore, 340, 72);
     }
 
     // GameEventListener method
