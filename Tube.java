@@ -1,6 +1,7 @@
+import java.awt.*;
 import java.util.*;
 public class Tube {
-    private ArrayList<Block> tube = new Arraylist<>();
+    private ArrayList<Block> tube = new ArrayList<>();
     private int maxCapacity;
 
     //init value of 10 if no size is specified
@@ -47,7 +48,7 @@ public class Tube {
     public boolean isTubeSolved(){
         Color topColor = viewTopBlock().getColor();
         for(int i = 0; i <= tube.size(); i++){ //starting at bottom since its more likely to have differences here
-            if (!(topColor.equals(tube.get(i).getColor())){ //stops if top colour is different from loop colour
+            if (!(topColor.equals(tube.get(i).getColor()))){ //stops if top colour is different from loop colour
                 return false;
             }
         }

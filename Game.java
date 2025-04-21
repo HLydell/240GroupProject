@@ -16,17 +16,21 @@ public class Game extends JComponent implements GameEventListener, MouseListener
 
     // Game Menus
     private Menu mainMenu;
-    private Menu selectLevelMenu;
     private Menu loadLevelMenu;
     private Menu saveLevelMenu;
     private Menu winLevelMenu;
 
+    // Select Level Menu can have multiple pages depending on how many Levels are available
+    private ArrayList<Menu> selectLevelMenus;
+
     // Lists of Buttons for each Menu
     private ArrayList<Button> mainMenuButtonList;
-    private ArrayList<Button> selectLevelButtonList;
     private ArrayList<Button> loadLevelButtonList;
     private ArrayList<Button> saveLevelButtonList;
     private ArrayList<Button> winLevelButtonList;
+
+    // Each page of Select Level Menu needs a Button List
+    private ArrayList<ArrayList<Button>> selectLevelButtonLists;
 
     // List of Pre-made Levels and Saved Levels
     private ArrayList<Level> levelList;
@@ -63,7 +67,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
 
         // Initialize all Menus and add Buttons and GameEvents
         setupMainMenu();
-        setupSelectLevelMenu();
+        setupSelectLevelMenus();
         setupLoadLevelMenu();
         setupSaveLevelMenu();
         setupWinLevelMenu();
@@ -75,10 +79,14 @@ public class Game extends JComponent implements GameEventListener, MouseListener
 
         // Each Component is added with a name that can be used to get that Component later with cardLayout
         add(mainMenu, mainMenu.getName());
-        add(selectLevelMenu, selectLevelMenu.getName());
         add(loadLevelMenu, loadLevelMenu.getName());
         add(saveLevelMenu, saveLevelMenu.getName());
         add(winLevelMenu, winLevelMenu.getName());
+
+        // Add all the Select Level Menu pages
+        for(Menu menu : selectLevelMenus) {
+            add(menu, menu.getName());
+        }
 
         // Add every Level Component to the Game window with the name "Level #" starting with 1.
         // Example: Level 1, Level 2,..., Level 15, Level 16,...
@@ -92,7 +100,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         levelList = new ArrayList<>();
 
         // PLACEHOLDER CODE: Initializes empty levels for testing.
-        for(int i = 1; i <= 16; i++){
+        for(int i = 1; i <= 100; i++){
             Level level = new Level(i);
             levelList.add(level);
         }
@@ -162,7 +170,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         Button loadLevelButton = new Button("Load Level", 300, 250, 200, 80);
 
         // Main Menu Button Events
-        selectLevelButton.setGameEvent(new GameEvent(EventType.GOTO_MENU_SELECT_LEVEL));
+        selectLevelButton.setGameEvent(new GameEvent(EventType.GOTO_MENU_SELECT_LEVEL,1));
         loadLevelButton.setGameEvent(new GameEvent(EventType.GOTO_MENU_LOAD_LEVEL));
 
         // Add this Game as a GameEventListener to be notified with the Button is clicked.
@@ -177,51 +185,89 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         mainMenu.addButtons(mainMenuButtonList);
     }
 
-    // Initialize Select Level Menu - Displayed when Save Button is clicked in a Level
+    // Initialize Select Level Menus - Displayed when Save Button is clicked in a Level
+    // Each Menu holds 16 Level buttons.
     // Create and arrange Buttons. Add GameEvents to each Button and add this Game as GameEventListener
-    public void setupSelectLevelMenu(){
-        selectLevelMenu = new Menu("Select Level");
-        selectLevelButtonList = new ArrayList<>();
+    public void setupSelectLevelMenus(){
+        selectLevelMenus = new ArrayList<>();
+        selectLevelButtonLists = new ArrayList<>();
 
-        // Add Back Button to go back to Main Menu
-        Button backButton = new Button("", "Back", 15, 0, 80, 30);
-        backButton.setGameEvent(new GameEvent(EventType.GOTO_MENU_MAIN_MENU));
-        backButton.addGameEventListener(this);
-        selectLevelMenu.addButton(backButton);
+        // Get total number of Menus needed all the Levels with 16 Buttons per page
+        int menuCount = (int) Math.ceil(levelList.size()/16.0);
 
-        // PLACEHOLDER CODE: add up to 16 Level Buttons to Select Level Menu
-        // This code will be replaced when we load Levels from a file
-        for(int i = 1; i <= levelList.size(); i++){
+        // Create each Select Level Menu and setup Buttons
+        for(int i = 1; i <= menuCount; i++){
+            Menu selectMenu = new Menu("Select Level: Page "+i);
+            ArrayList<Button> buttonList = new ArrayList<>();
 
-            // Divide Buttons into 4 columns
-            int buttonX = 100;
-            if(i % 4 == 2){
-                buttonX = 250;
+            // Add Back Button to go back to Main Menu
+            Button backButton = new Button("", "Back", 15, 0, 80, 30);
+            backButton.setGameEvent(new GameEvent(EventType.GOTO_MENU_MAIN_MENU));
+            backButton.addGameEventListener(this);
+            selectMenu.addButton(backButton);
+
+            // Add Previous Page Button to go to previous page of Levels if page exists
+            if(i-1 >= 1) {
+                Button prevButton = new Button("", "Prev Page", 295, 450, 80, 30);
+                prevButton.setGameEvent(new GameEvent(EventType.GOTO_MENU_SELECT_LEVEL, i - 1));
+                prevButton.addGameEventListener(this);
+                selectMenu.addButton(prevButton);
             }
-            else if(i % 4 == 3){
-                buttonX = 400;
+
+            // Add Next Page Button to go to next page of Levels if more pages exist
+            if(i+1 <= menuCount) {
+                Button nextButton = new Button("", "Next Page", 400, 450, 80, 30);
+                nextButton.setGameEvent(new GameEvent(EventType.GOTO_MENU_SELECT_LEVEL, i + 1));
+                nextButton.addGameEventListener(this);
+                selectMenu.addButton(nextButton);
             }
-            else if (i % 4 == 0){
-                buttonX = 550;
+
+            // First index on this page. Starts at 0
+            int first = (i-1)*16;
+            // Add up to 16 Buttons per page
+            for(int j = 1; j <= 16; j++){
+                int levelId = j+first;
+
+                // Stop adding Buttons if no more Levels exist
+                if(levelId > levelList.size()){
+                    break;
+                }
+
+                // Divide Buttons into 4 columns
+                int buttonX = 100;
+                if(j % 4 == 2){
+                    buttonX = 250;
+                }
+                else if(j % 4 == 3){
+                    buttonX = 400;
+                }
+                else if (j % 4 == 0){
+                    buttonX = 550;
+                }
+
+                // Divide Buttons into 4 rows
+                int buttonY = ((j-1)/4) * 100 + 50;
+
+                // Create Button with Level number and add GameEvent to go to that Level number
+                int bestScore = levelList.get(levelId-1).getBestScore();
+                Button levelButton = new Button("Level "+levelId,"Best Score: "+bestScore,
+                        buttonX, buttonY, 125, 60);
+                levelButton.setGameEvent(new GameEvent(EventType.GOTO_LEVEL, levelId));
+
+                // Add this Game as a GameEventListener to be notified with the Button is clicked.
+                levelButton.addGameEventListener(this);
+
+                // Add Button to list of Level Select Buttons
+                buttonList.add(levelButton);
             }
 
-            // Divide Buttons into 4 rows
-            int buttonY = ((i-1)/4) * 100 + 50;
+            // Add Buttons to the Menu
+            selectMenu.addButtons(buttonList);
 
-            // Create Button with Level number and add GameEvent to go to that Level number
-            Button levelButton = new Button("Level "+i, "Best Score: 0",
-                    buttonX, buttonY, 125, 60);
-            levelButton.setGameEvent(new GameEvent(EventType.GOTO_LEVEL, i));
-
-            // Add this Game as a GameEventListener to be notified with the Button is clicked.
-            levelButton.addGameEventListener(this);
-
-            // Add Button to list of Level Select Buttons
-            selectLevelButtonList.add(levelButton);
+            // Add Menu to the list of Select Level Menus and add List of Buttons to the List of Button Lists
+            selectLevelMenus.add(selectMenu);
+            selectLevelButtonLists.add(buttonList);
         }
-
-        // Add all the Buttons to Level Select Menu
-        selectLevelMenu.addButtons(selectLevelButtonList);
     }
 
     // Initialize Load Level Menu
@@ -375,11 +421,18 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         winLevelMenu.addButtons(winLevelButtonList);
     }
 
-    // Update Best Score info on all Level Select Buttons
-    public void updateSelectLevelMenu(){
-        for(int i = 0; i < selectLevelButtonList.size(); i++){
-            Button button = selectLevelButtonList.get(i);
-            Level level = levelList.get(i);
+    // Update Best Score info on all Level Select Buttons on given Page #
+    public void updateSelectLevelMenu(int id){
+        // Get list of Buttons for this Page
+        ArrayList<Button> buttons = selectLevelButtonLists.get(id-1);
+
+        // Index for first Level on this Page
+        int firstLevel = (id-1)*16;
+
+        // Loop through all Buttons on this page and update Best Score
+        for(int i = 0; i < buttons.size(); i++){
+            Button button = buttons.get(i);
+            Level level = levelList.get(firstLevel+i);
             button.setLine2("Best Score: "+level.getBestScore());
         }
     }
@@ -446,8 +499,9 @@ public class Game extends JComponent implements GameEventListener, MouseListener
                 break;
             case GOTO_MENU_SELECT_LEVEL:
                 // Update info and Buttons, then display Select Level Menu
-                updateSelectLevelMenu();
-                cardLayout.show(this, selectLevelMenu.getName());
+                int id = event.getEventId();
+                updateSelectLevelMenu(id);
+                cardLayout.show(this, selectLevelMenus.get(id-1).getName());
                 break;
             case GOTO_MENU_LOAD_LEVEL:
                 // Update info and Buttons, then display Load Level Menu
