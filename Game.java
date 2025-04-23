@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Game extends JComponent implements GameEventListener, MouseListener {
+    private JFrame frame;
+
     // Layout for the Game. Shows 1 Menu/Level at a time and allows switching between different Menus/Levels
     private CardLayout cardLayout;
 
@@ -45,7 +47,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     public Game() {
 
         // Create and set up the window.
-        JFrame frame = new JFrame("Block Sort Puzzle!");
+        frame = new JFrame("Block Sort Puzzle!");
 
         // Make the program close when the window closes
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -102,18 +104,21 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     // Load all pre-made Levels from File and store in an ArrayList
     public void loadLevelsFromFile() {
         levelList = new ArrayList<>();
+
+        // File containing multiple Levels
         String filename = "levels/levels.lvl";
         try {
             Scanner in = new Scanner(new File(filename));
+
+            //Level reads up to and including a blank line, then check to see if there is another Level in the File.
             while (in.hasNext()) {
                 levelList.add(new Level(in));
             }
         }
         catch (FileNotFoundException e) {
-            JOptionPane.showMessageDialog(null, filename+" file not found", "File Not Found", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(frame, filename+" file not found", "File Not Found", JOptionPane.WARNING_MESSAGE);
             System.exit(0);
         }
-
         currentLevel = levelList.getFirst();
     }
 

@@ -31,9 +31,9 @@ public class Level extends JComponent implements GameEventListener{
         setLayout(null);
     }
 
+    // Create Level by reading in lines from a File
     public Level(Scanner in){
         this.id = id;
-        bestScore = 0;
         currentScore = 0;
 
         tubeList = new ArrayList<>();
@@ -42,19 +42,24 @@ public class Level extends JComponent implements GameEventListener{
         // Null Layout allows Components like Buttons to be drawn anywhere.
         setLayout(null);
 
+        // First line is formated: @levelId,bestScore
         String header = in.nextLine();
         header = header.replaceAll("@","");
         String[] tokens = header.split(",");
         id = Integer.parseInt(tokens[0]);
         bestScore = Integer.parseInt(tokens[1]);
 
+        // Every line is a Tube
         while(in.hasNextLine()){
             String line = in.nextLine();
+
+            //Blank line marks the end of this Level
             if(line.isEmpty()){
                 break;
             }
             Tube tube = new Tube(line.length());
             for(int i = 0; i < line.length(); i++){
+                // Empty spaces are marked with dashes
                 if(line.charAt(i) == '-'){
                     break;
                 }
