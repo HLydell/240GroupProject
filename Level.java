@@ -152,6 +152,17 @@ public class Level extends JComponent implements GameEventListener{
         }
     }
 
+    public void restart(){
+        if (!moveList.isEmpty()) {
+            while (!moveList.isEmpty()){
+                undo();
+                currentScore -= 1;
+            }
+        } else {
+            System.out.println("There is no more moves to restart");
+        }
+    }
+
     public boolean isSolved(){
         for (int i = 0; i < tubeList.size(); i++){
             if (!tubeList.get(i).isTubeSolved()){
@@ -160,4 +171,6 @@ public class Level extends JComponent implements GameEventListener{
         }
         return true;
     }
+
+
 }
