@@ -36,8 +36,8 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     private ArrayList<Level> levelList;
     private ArrayList<Level> savedLevelList;
 
-    // Level ID for the current Level being Played. Starts at 1.
-    private int currentLevelId;
+    // Current Level being Played. Defaults to 1
+    private Level currentLevel;
 
     public Game() {
 
@@ -90,8 +90,9 @@ public class Game extends JComponent implements GameEventListener, MouseListener
 
         // Add every Level Component to the Game window with the name "Level #" starting with 1.
         // Example: Level 1, Level 2,..., Level 15, Level 16,...
-        for(int i = 1; i <= levelList.size(); i++){
-            add(levelList.get(i-1), "Level "+i);
+        for(int i = 0; i < levelList.size(); i++){
+            Level level = levelList.get(i);
+            add(level, "Level "+level.getId());
         }
     }
 
@@ -104,7 +105,8 @@ public class Game extends JComponent implements GameEventListener, MouseListener
             Level level = new Level(i);
             levelList.add(level);
         }
-        currentLevelId = 1;
+
+        currentLevel = levelList.getFirst();
     }
 
     // Load all Saved Levels from File and store in an ArrayList
@@ -225,31 +227,32 @@ public class Game extends JComponent implements GameEventListener, MouseListener
             // First index on this page. Starts at 0
             int first = (i-1)*16;
             // Add up to 16 Buttons per page
-            for(int j = 1; j <= 16; j++){
-                int levelId = j+first;
+            for(int j = 0; j < 16; j++){
+                int levelIndex = j+first;
 
                 // Stop adding Buttons if no more Levels exist
-                if(levelId > levelList.size()){
+                if(levelIndex >= levelList.size()){
                     break;
                 }
 
                 // Divide Buttons into 4 columns
                 int buttonX = 100;
-                if(j % 4 == 2){
+                if(j % 4 == 1){
                     buttonX = 250;
                 }
-                else if(j % 4 == 3){
+                else if(j % 4 == 2){
                     buttonX = 400;
                 }
-                else if (j % 4 == 0){
+                else if (j % 4 == 3){
                     buttonX = 550;
                 }
 
                 // Divide Buttons into 4 rows
-                int buttonY = ((j-1)/4) * 100 + 50;
+                int buttonY = (j/4) * 100 + 50;
 
                 // Create Button with Level number and add GameEvent to go to that Level number
-                int bestScore = levelList.get(levelId-1).getBestScore();
+                int levelId = levelList.get(levelIndex).getId();
+                int bestScore = levelList.get(levelIndex).getBestScore();
                 Button levelButton = new Button("Level "+levelId,"Best Score: "+bestScore,
                         buttonX, buttonY, 125, 60);
                 levelButton.setGameEvent(new GameEvent(EventType.GOTO_LEVEL, levelId));
@@ -287,11 +290,11 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         // Save Slot 1
         placeholderSavedLevels[0][0] = "1 (PLACEHOLDER)";
         placeholderSavedLevels[0][1] = "3";
-        placeholderSavedLevels[0][2] = "4/15/2025";
+        placeholderSavedLevels[0][2] = "04-22-2025 21:53:31";
         // Save Slot 2
         placeholderSavedLevels[1][0] = "6 (PLACEHOLDER)";
         placeholderSavedLevels[1][1] = "46";
-        placeholderSavedLevels[1][2] = "4/16/2025";
+        placeholderSavedLevels[1][2] = "4/22/2025 21:53:31";
         // Save Slot 3
         placeholderSavedLevels[2][0] = "18 (PLACEHOLDER)";
         placeholderSavedLevels[2][1] = "1028";
@@ -342,11 +345,11 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         // Save Slot 1
         placeholderSavedLevels[0][0] = "1 (PLACEHOLDER)";
         placeholderSavedLevels[0][1] = "3";
-        placeholderSavedLevels[0][2] = "4/15/2025";
+        placeholderSavedLevels[0][2] = "04-22-2025 21:53:31";
         // Save Slot 2
         placeholderSavedLevels[1][0] = "6 (PLACEHOLDER)";
         placeholderSavedLevels[1][1] = "46";
-        placeholderSavedLevels[1][2] = "4/16/2025";
+        placeholderSavedLevels[1][2] = "04/22/2025 21:53:31";
         // Save Slot 3
         placeholderSavedLevels[2][0] = "18 (PLACEHOLDER)";
         placeholderSavedLevels[2][1] = "1028";
@@ -406,8 +409,8 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         Button nextLevelButton = new Button("Next Level", 425, 175, 200, 80);
 
         // Win Menu Button Events
-        retryLevelButton.setGameEvent(new GameEvent(EventType.GOTO_LEVEL,currentLevelId));
-        nextLevelButton.setGameEvent(new GameEvent(EventType.GOTO_LEVEL,currentLevelId+1));
+        retryLevelButton.setGameEvent(new GameEvent(EventType.GOTO_LEVEL,currentLevel.getId()));
+        nextLevelButton.setGameEvent(new GameEvent(EventType.GOTO_LEVEL,currentLevel.getId()+1));
 
         // Add this Game as a GameEventListener to be notified with the Button is clicked.
         retryLevelButton.addGameEventListener(this);
@@ -450,8 +453,8 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     // Update the info and Buttons on the Win Menu to show Level just played.
     // Update Retry and Next Buttons to point to correct Levels.
     public void updateWinMenu(){
-        // Get Level that was just played. Level ID starts at 1 and list Index starts at 0.
-        Level winLevel = levelList.get(currentLevelId-1);
+        // Get Level that was just played.
+        Level winLevel = currentLevel;
 
         // Update Level info on Win Menu
         Button infoButton = winLevelButtonList.get(0);
@@ -462,11 +465,11 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         // Update Retry and Next Level Buttons to point to correct Levels
         Button retryButton =  winLevelButtonList.get(1);
         Button nextButton =  winLevelButtonList.get(2);
-        retryButton.setGameEvent(new GameEvent(EventType.GOTO_LEVEL, currentLevelId));
-        nextButton.setGameEvent(new GameEvent(EventType.GOTO_LEVEL, currentLevelId+1));
+        retryButton.setGameEvent(new GameEvent(EventType.GOTO_LEVEL, currentLevel.getId()));
+        nextButton.setGameEvent(new GameEvent(EventType.GOTO_LEVEL, currentLevel.getId()+1));
 
         // Deactivate Next Button with there are no more levels
-        if(currentLevelId+1 <= levelList.size()){
+        if(currentLevel.getId()+1 <= levelList.size()){
             nextButton.setEnabled(true);
         }
         else{
@@ -519,9 +522,9 @@ public class Game extends JComponent implements GameEventListener, MouseListener
                 cardLayout.show(this, winLevelMenu.getName());
                 break;
             case GOTO_LEVEL:
-                // Go to Level from Event ID and update Current Level ID
-                currentLevelId = event.getEventId();
-                cardLayout.show(this, "Level "+currentLevelId);
+                // Go to Level from Event ID and update Current Level
+                currentLevel = getLevel(event.getEventId());
+                cardLayout.show(this, "Level "+currentLevel.getId());
                 break;
             case LOAD_LEVEL:
                 //PLACEHOLDER CODE: Add code to Load a saved Level
@@ -533,9 +536,19 @@ public class Game extends JComponent implements GameEventListener, MouseListener
                 break;
             case RETURN_TO_LEVEL:
                 // Resume playing current Level
-                cardLayout.show(this, "Level "+currentLevelId);
+                cardLayout.show(this, "Level "+currentLevel.getId());
                 break;
         }
+    }
+
+    // Find Level with this Level ID
+    public Level getLevel(int id){
+        for(Level level : levelList){
+            if(level.getId() == id){
+                return level;
+            }
+        }
+        return null;
     }
 
     // This method is called any time a Mouse is clicked in the Game window.
