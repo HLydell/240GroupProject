@@ -172,5 +172,21 @@ public class Level extends JComponent implements GameEventListener{
         return true;
     }
 
+    public String levelToText () {
+        int levelId = getId();
+        int bestScore = getBestScore();
+        String firstLine = "@" + levelId + ", " + bestScore + "\n";
+
+        String tubes = "";
+        for (Tube tube : tubeList) {
+            ArrayList<Block> blocks = tube.getTube();
+            for (Block block : blocks) {
+                tubes = tubes.concat(block.toString());
+            }
+            tubes = tubes.concat("\n");
+        }
+
+        return firstLine + tubes + "\n\n";
+    }
 
 }
