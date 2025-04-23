@@ -8,7 +8,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Game extends JComponent implements GameEventListener, MouseListener {
     // Layout for the Game. Shows 1 Menu/Level at a time and allows switching between different Menus/Levels
@@ -99,11 +102,16 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     // Load all pre-made Levels from File and store in an ArrayList
     public void loadLevelsFromFile() {
         levelList = new ArrayList<>();
-
-        // PLACEHOLDER CODE: Initializes empty levels for testing.
-        for(int i = 1; i <= 100; i++){
-            Level level = new Level(i);
-            levelList.add(level);
+        String filename = "levels/levels.lvl";
+        try {
+            Scanner in = new Scanner(new File(filename));
+            while (in.hasNext()) {
+                levelList.add(new Level(in));
+            }
+        }
+        catch (FileNotFoundException e) {
+            JOptionPane.showMessageDialog(null, filename+" file not found", "File Not Found", JOptionPane.WARNING_MESSAGE);
+            System.exit(0);
         }
 
         currentLevel = levelList.getFirst();
@@ -578,4 +586,3 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     @Override
     public void mouseExited(MouseEvent e) {}
 }
-// Test Comment to make sure Git is working

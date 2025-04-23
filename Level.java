@@ -6,6 +6,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 // JComponent allows this class to be drawn in the JFrame that is created in Game.
 // GameEventListener allows this class to get notified when a Button is clicked
@@ -30,6 +31,52 @@ public class Level extends JComponent implements GameEventListener{
         setLayout(null);
     }
 
+    public Level(Scanner in){
+        this.id = id;
+        bestScore = 0;
+        currentScore = 0;
+
+        tubeList = new ArrayList<>();
+        moveList = new ArrayList<>();
+
+        // Null Layout allows Components like Buttons to be drawn anywhere.
+        setLayout(null);
+
+        String header = in.nextLine();
+        header = header.replaceAll("@","");
+        String[] tokens = header.split(",");
+        id = Integer.parseInt(tokens[0]);
+        bestScore = Integer.parseInt(tokens[1]);
+
+        while(in.hasNextLine()){
+            String line = in.nextLine();
+            if(line.isEmpty()){
+                break;
+            }
+            Tube tube = new Tube(line.length());
+            for(int i = 0; i < line.length(); i++){
+                if(line.charAt(i) == '-'){
+                    break;
+                }
+                tube.addBlock(new Block(line.charAt(i)));
+            }
+            tubeList.add(tube);
+        }
+
+        int windowWidth = 800;
+        int windowHeight = 600;
+
+        int deltaX = windowWidth/(tubeList.size()*2 +1);
+
+        for(int i = 0; i<tubeList.size(); i++){
+            int tubeX = ((i*2)+1)*deltaX;
+            int tubeY = 200;
+            int tubeWidth = deltaX;
+            int tubeHeight = windowHeight/2;
+            tubeList.get(i).setBounds( tubeX, tubeY, tubeWidth, tubeHeight);
+        }
+    }
+
     // This is where all the drawing to the screen gets done.
     // Our Original UML showed a method called draw(Graphics g),
     // but we can use this instead because it is part of JComponent.
@@ -44,6 +91,13 @@ public class Level extends JComponent implements GameEventListener{
         g.setFont(new Font(Font.DIALOG, Font.PLAIN, 14));
         g.drawString("Best Score:  "+ bestScore, 350, 55);
         g.drawString("Current Score:  "+ currentScore, 340, 72);
+
+        for(int i = 0; i<tubeList.size(); i++){
+            Tube tube = tubeList.get(i);
+            tube.draw(g, tube.getX(), tube.getY(), tube.getWidth(), tube.getHeight());
+            g.setColor(Color.black);
+            g.drawRect(tube.getX(), tube.getY(), tube.getWidth(), tube.getHeight());
+        }
     }
 
     // GameEventListener method
@@ -64,6 +118,7 @@ public class Level extends JComponent implements GameEventListener{
             case EventType.LEVEL_HINT:
                 //PLACEHOLDER CODE: Add code to get a hint or the next move toward the solution
                 System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
+                new SolveLevel(this);
                 break;
         }
     }
@@ -120,5 +175,9 @@ public class Level extends JComponent implements GameEventListener{
             }
         }
         return true;
+    }
+
+    public ArrayList<Tube> getTubeList(){
+        return tubeList;
     }
 }
