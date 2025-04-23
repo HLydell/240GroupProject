@@ -6,7 +6,7 @@ public class SolveLevel {
     public ArrayList <String> searchHistory = new ArrayList<>();
     private int maxSearchDepth = 10000;
     private ArrayList<Point> moveList;
-    private long TIMELIMIT = 20000L;
+    private long TIMELIMIT = 5000L;
 
     public SolveLevel(Level level) {
         moveList = new ArrayList<>();
@@ -155,5 +155,12 @@ public class SolveLevel {
 
     public ArrayList<Point> getMoveList(){
         return moveList;
+    }
+
+    public Point getNextMove(){
+        if(moveList.isEmpty()){
+            return null;
+        }
+        return moveList.getLast();
     }
 }

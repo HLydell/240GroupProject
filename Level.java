@@ -5,6 +5,7 @@
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -94,7 +95,7 @@ public class Level extends JComponent implements GameEventListener{
 
         for(int i = 0; i<tubeList.size(); i++){
             Tube tube = tubeList.get(i);
-            tube.draw(g, tube.getX(), tube.getY(), tube.getWidth(), tube.getHeight());
+            tube.paintComponent(g);
             g.setColor(Color.black);
             g.drawRect(tube.getX(), tube.getY(), tube.getWidth(), tube.getHeight());
         }
@@ -114,11 +115,12 @@ public class Level extends JComponent implements GameEventListener{
             case EventType.LEVEL_UNDO:
                 //PLACEHOLDER CODE: Add code to undo the last move
                 System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
+                undo();
                 break;
             case EventType.LEVEL_HINT:
                 //PLACEHOLDER CODE: Add code to get a hint or the next move toward the solution
                 System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
-                new SolveLevel(this);
+                getHint();
                 break;
         }
     }
@@ -138,9 +140,12 @@ public class Level extends JComponent implements GameEventListener{
     public void moveBlock(Tube start, Tube end, boolean undo){
         int endSpace = end.getEmptySpace();
         Color startColor = start.viewTopBlock().getColor();
+        if(!end.isEmpty() && !startColor.equals(end.viewTopBlock().getColor())){
+            return;
+        }
         if (endSpace >= start.getTopColorSize()){ //if the empty space is sufficient
             int top = start.getFillAmt() - 1;
-            while (start.viewTopBlock().getColor().equals(startColor) && top >= 0){
+            while (top >= 0 && start.viewTopBlock().getColor().equals(startColor)){
                 Block temp = start.removeTopBlock(); //moves block over
                 end.addBlock(temp);
                 top -= 1;
@@ -162,9 +167,20 @@ public class Level extends JComponent implements GameEventListener{
             moveBlock(start, end, true); //so they don't get re-added
             //score not decreased, user punished for undo
             moveList.remove(moveList.size() - 1);
-            moveList.remove(moveList.size() - 2);
+            moveList.remove(moveList.size() - 1);
         } else {
             System.out.println("There is no more moves to undo");
+        }
+    }
+
+    public void getHint(){
+        SolveLevel solve = new SolveLevel(this);
+        Point move = solve.getNextMove();
+        if(move != null){
+            moveBlock(tubeList.get(move.x), tubeList.get(move.y), false);
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "No Solution Found", "Hint", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -175,6 +191,34 @@ public class Level extends JComponent implements GameEventListener{
             }
         }
         return true;
+    }
+
+    public void mouseReleased(MouseEvent e){
+        for(Tube tube: tubeList){
+            if(tube.contains(e.getX(), e.getY())){
+                for(Tube t: tubeList){
+                    if(t.equals(tube)){
+                        continue;
+                    }
+
+                    if(t.isSelected()){
+                        moveBlock(t, tube, false);
+                        t.setSelected(false);
+                        tube.setSelected(false);
+                        return;
+                    }
+                }
+                // No other tubes selected
+                if(!tube.isEmpty() ){ // Tube is empty
+                    tube.mouseClicked();
+                    return;
+                }
+            }
+        }
+
+        for(Tube tube: tubeList){
+            tube.setSelected(false);
+        }
     }
 
     public ArrayList<Tube> getTubeList(){

@@ -394,6 +394,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     public void setupWinLevelMenu(){
         winLevelMenu = new Menu("Level Complete!");
         winLevelButtonList = new ArrayList<>();
+        winLevelMenu.setBackground(Color.BLUE);
 
         // Add Back Button to go back to Main Menu
         Button backButton = new Button("", "Back", 15, 0, 80, 30);
@@ -492,6 +493,10 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        if(currentLevel != null && currentLevel.isVisible() && currentLevel.isSolved()){
+            gameEventPerformed(new GameEvent(EventType.GOTO_MENU_WIN_LEVEL));
+        }
+
         // Force the screen to keep re-painting itself in case anything has changed
         revalidate();
         repaint();
@@ -578,6 +583,10 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     public void mouseReleased(MouseEvent e) {
         // PLACEHOLDER CODE: This just shows how the MouseListener can work.
         System.out.println("Mouse Released at " + e.getX() + ", " + e.getY());
+        if(currentLevel.isVisible()) {
+            currentLevel.mouseReleased(e);
+        }
+
     }
 
     @Override

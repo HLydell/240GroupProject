@@ -4,6 +4,7 @@ public class Tube {
     private ArrayList<Block> tube = new ArrayList<>();
     private int maxCapacity;
     private Rectangle bounds;
+    private boolean selected;
 
     //init value of 10 if no size is specified
     public Tube(){
@@ -80,6 +81,9 @@ public class Tube {
         if(tube.isEmpty()){
             return true;
         }
+        if(!isFull()){
+            return false;
+        }
         Color topColor = viewTopBlock().getColor();
         for(int i = 0; i < tube.size(); i++){ //starting at bottom since its more likely to have differences here
             if (!(topColor.equals(tube.get(i).getColor()))){ //stops if top colour is different from loop colour
@@ -112,16 +116,38 @@ public class Tube {
         return bounds.contains(x,y);
     }
 
-    public void draw(Graphics g, int x, int y, int width, int height){
-        int blockWidth = width;
-        int blockHeight = height/maxCapacity;
-        int blockX = x;
+    public void paintComponent(Graphics g){
+        int blockWidth = bounds.width;
+        int blockHeight = bounds.height/maxCapacity;
+        int blockX = bounds.x;
 
         for(int i = 0; i < tube.size(); i++){
-            int blockY = y + height - ((i+1)*blockHeight);
+            int blockY = bounds.y + bounds.height - ((i+1)*blockHeight);
             g.setColor(tube.get(i).getColor());
             g.fillRect(blockX, blockY, blockWidth, blockHeight);
         }
+    }
+
+    public boolean isSelected(){
+        return selected;
+    }
+
+    public void setSelected(boolean selected){
+        if(this.selected == selected){
+            return;
+        }
+
+        this.selected = selected;
+        if(selected){
+            bounds.translate(0, -20);
+        }
+        else {
+            bounds.translate(0, 20);
+        }
+    }
+
+    public void mouseClicked(){
+        setSelected(!selected);
     }
 
     @Override
