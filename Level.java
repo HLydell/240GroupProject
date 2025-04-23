@@ -6,6 +6,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 // JComponent allows this class to be drawn in the JFrame that is created in Game.
 // GameEventListener allows this class to get notified when a Button is clicked
@@ -28,6 +29,39 @@ public class Level extends JComponent implements GameEventListener{
 
         // Null Layout allows Components like Buttons to be drawn anywhere.
         setLayout(null);
+    }
+
+    public Level(Scanner in){
+        this.id = id;
+        bestScore = 0;
+        currentScore = 0;
+
+        tubeList = new ArrayList<>();
+        moveList = new ArrayList<>();
+
+        // Null Layout allows Components like Buttons to be drawn anywhere.
+        setLayout(null);
+
+        String header = in.nextLine();
+        header = header.replaceAll("@","");
+        String[] tokens = header.split(",");
+        id = Integer.parseInt(tokens[0]);
+        bestScore = Integer.parseInt(tokens[1]);
+
+        while(in.hasNextLine()){
+            String line = in.nextLine();
+            if(line.isEmpty()){
+                break;
+            }
+            Tube tube = new Tube(line.length());
+            for(int i = 0; i < line.length(); i++){
+                if(line.charAt(i) == '-'){
+                    break;
+                }
+                tube.addBlock(new Block(line.charAt(i)));
+            }
+            tubeList.add(tube);
+        }
     }
 
     // This is where all the drawing to the screen gets done.
