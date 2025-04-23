@@ -21,17 +21,37 @@ public class Tube {
 
     //gets the top block (end of arraylist)
     public Block viewTopBlock(){
-        return tube.get(tube.size());
+        return tube.get(tube.size() - 1);
+    }
+
+    //gets size of top block (as a collective)
+    public int getTopColorSize(){
+        Color topColor = viewTopBlock().getColor();
+        int count = 0;
+        int top = tube.size() - 1;
+        while (tube.get(top).getColor().equals(topColor) && top >= 0){
+            count += 1;
+            top -= 1;
+        }
+        return count;
     }
 
     //removes top block
     public Block removeTopBlock(){
-        return tube.remove(tube.size());
+        return tube.remove(tube.size() - 1);
     }
 
     //amount of space left over
     public int getEmptySpace(){
         return maxCapacity - tube.size();
+    }
+
+    public ArrayList<Block> getTube(){
+        return tube;
+    }
+
+    public int getFillAmt(){
+        return tube.size();
     }
 
     //tube is empty if arraylist is empty

@@ -5,6 +5,7 @@
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 // JComponent allows this class to be drawn in the JFrame that is created in Game.
 // GameEventListener allows this class to get notified when a Button is clicked
@@ -14,11 +15,16 @@ public class Level extends JComponent implements GameEventListener{
     private int id; // Level number
     private int bestScore;
     private int currentScore;
+    private ArrayList<Tube> tubeList;
+    private ArrayList<Tube> moveList;
 
     public Level(int id){
         this.id = id;
         bestScore = 0;
         currentScore = 0;
+
+        tubeList = new ArrayList<>(); //hypothetically this allocation would be done as the return of a separate method which reads in from file
+        //it could also be within this method, since we would want to assign best score as well.
 
         // Null Layout allows Components like Buttons to be drawn anywhere.
         setLayout(null);
@@ -72,5 +78,47 @@ public class Level extends JComponent implements GameEventListener{
 
     public int getCurrentScore(){
         return currentScore;
+    }
+
+    public void moveBlock(Tube start, Tube end, boolean undo){
+        int endSpace = end.getEmptySpace();
+        Color startColor = start.viewTopBlock().getColor();
+        if (endSpace >= start.getTopColorSize()){ //if the empty space is sufficient
+            int top = start.getFillAmt() - 1;
+            while (start.viewTopBlock().getColor().equals(startColor) && top >= 0){
+                Block temp = start.removeTopBlock(); //moves block over
+                end.addBlock(temp);
+                top -= 1;
+            }
+            if (!undo){
+                moveList.add(start); // keep track of which tubes have been moved
+                moveList.add(end);
+            }
+            currentScore += 1;
+        } else {
+            System.out.println("Color could not be moved");
+        }
+    }
+
+    public void undo(){
+        if (!moveList.isEmpty()) {
+            Tube start = moveList.get(moveList.size() - 1); //get last item (which is the end of the last move
+            Tube end = moveList.get(moveList.size() - 2); //start of last move
+            moveBlock(start, end, true); //so they don't get re-added
+            //score not decreased, user punished for undo
+            moveList.remove(moveList.size() - 1);
+            moveList.remove(moveList.size() - 2);
+        } else {
+            System.out.println("There is no more moves to undo");
+        }
+    }
+
+    public boolean isSolved(){
+        for (int i = 0; i < tubeList.size(); i++){
+            if (!tubeList.get(i).isTubeSolved()){
+                return false;
+            }
+        }
+        return true;
     }
 }
