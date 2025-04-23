@@ -1,4 +1,4 @@
-import java.awt.Color;
+import java.awt.*;
 
 public class Block {
     private Color color;
@@ -72,6 +72,10 @@ public class Block {
         else {
             return 'J';
         }
+    }
+
+    public void draw (Graphics g) {
+
     }
 
     // Printing out this block will just return the char used to ID this block

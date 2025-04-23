@@ -74,4 +74,8 @@ public class Tube {
         }
         return true;
     }
+
+    public void draw(Graphics g) {
+
+    }
 }
