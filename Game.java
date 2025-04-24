@@ -176,6 +176,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     // Create and arrange Buttons. Add GameEvents to each Button and add this Game as GameEventListener
     public void setupMainMenu(){
         mainMenu = new Menu("Main Menu");
+        mainMenu.setHeader("Block Sort Puzzle!");
         mainMenuButtonList = new ArrayList<>();
 
         // Main Menu Buttons
