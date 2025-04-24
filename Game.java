@@ -126,11 +126,9 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     public void loadSavedLevelsFromFile() {
         savedLevelList = new ArrayList<>();
 
-        // PLACEHOLDER CODE: Initializes 2 levels and 1 empty Save slot for testing.
-        for(int i = 1; i <= 2; i++){
-            Level level = new Level(i);
-            savedLevelList.add(level);
-        }
+        // PLACEHOLDER CODE: Adds 3 empty Save slots
+        savedLevelList.add(null);
+        savedLevelList.add(null);
         savedLevelList.add(null);
     }
 
