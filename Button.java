@@ -61,6 +61,25 @@ public class Button extends JButton {
         event = null;
     }
 
+    // Paint buttons with new Gradient from ColorScheme class
+    @Override
+    public void paintComponent(Graphics g){
+        // Only repaint active buttons
+        if(isEnabled()) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            Color c1 = ColorScheme.BUTTON_GRADIENT_COLOR_1;
+            Color c2 = ColorScheme.BUTTON_GRADIENT_COLOR_3;
+            if (getModel().isPressed()) {
+                c1 = ColorScheme.BUTTON_GRADIENT_COLOR_4.darker();
+                c2 = ColorScheme.BUTTON_GRADIENT_COLOR_2.brighter();
+            }
+            g2.setPaint(new GradientPaint(new Point(0, 0), c1, new Point(0, getHeight()), c2));
+            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.dispose();
+        }
+
+    }
+
     // Button created with only a Header
     public Button(String header, int x, int y, int width, int height) {
         this(header, "", "", "", x, y, width, height);

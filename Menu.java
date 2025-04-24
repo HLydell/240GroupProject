@@ -46,8 +46,13 @@ public class Menu extends JComponent {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, getWidth(), getHeight());
+        Graphics2D g2 = (Graphics2D) g.create();
+        Color c1 = ColorScheme.MENU_BG_COLOR_1;
+        Color c2 = ColorScheme.MENU_BG_COLOR_2;
+
+        g2.setPaint(new GradientPaint(new Point(0, 0), c1, new Point(0, getHeight()), c2));
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        g2.dispose();
     }
 
     // Add a list of Buttons to the Button Panel

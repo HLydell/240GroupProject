@@ -2,7 +2,8 @@ import java.awt.*;
 
 public class Block {
     private Color color;
-    private char id; // Single character used to identify Block in files
+    private char id;// Single character used to identify Block in files
+    private Rectangle shape = new Rectangle();
 
     public Block(Color color){
         this.color = color;
@@ -27,46 +28,46 @@ public class Block {
     // Convert a letter into a corresponding Color. Limit 10
     private Color convertCharToColor(char c){
         return switch(c){
-            case 'A' -> Color.red;
-            case 'B' -> Color.green;
-            case 'C' -> Color.blue;
-            case 'D' -> Color.yellow;
-            case 'E' -> Color.orange;
-            case 'F' -> Color.pink;
-            case 'G' -> Color.cyan;
-            case 'H' -> Color.magenta;
-            case 'I' -> Color.darkGray;
-            default -> Color.black;
+            case 'A' -> ColorScheme.BLOCK_A;
+            case 'B' -> ColorScheme.BLOCK_B;
+            case 'C' -> ColorScheme.BLOCK_C;
+            case 'D' -> ColorScheme.BLOCK_D;
+            case 'E' -> ColorScheme.BLOCK_E;
+            case 'F' -> ColorScheme.BLOCK_F;
+            case 'G' -> ColorScheme.BLOCK_G;
+            case 'H' -> ColorScheme.BLOCK_H;
+            case 'I' -> ColorScheme.BLOCK_I;
+            default -> ColorScheme.BLOCK_J;
         };
     }
 
     // Convert a Color into a corresponding letter. Limit 10
     private char convertColorToChar(Color c){
-        if(c.equals(Color.red)){
+        if(c.equals(ColorScheme.BLOCK_A)){
             return 'A';
         }
-        else if(c.equals(Color.green)){
+        else if(c.equals(ColorScheme.BLOCK_B)){
             return 'B';
         }
-        else if(c.equals(Color.blue)){
+        else if(c.equals(ColorScheme.BLOCK_C)){
             return 'C';
         }
-        else if(c.equals(Color.yellow)){
+        else if(c.equals(ColorScheme.BLOCK_D)){
             return 'D';
         }
-        else if(c.equals(Color.orange)){
+        else if(c.equals(ColorScheme.BLOCK_E)){
             return 'E';
         }
-        else if(c.equals(Color.pink)){
+        else if(c.equals(ColorScheme.BLOCK_F)){
             return 'F';
         }
-        else if(c.equals(Color.cyan)){
+        else if(c.equals(ColorScheme.BLOCK_G)){
             return 'G';
         }
-        else if(c.equals(Color.magenta)){
+        else if(c.equals(ColorScheme.BLOCK_H)){
             return 'H';
         }
-        else if(c.equals(Color.darkGray)){
+        else if(c.equals(ColorScheme.BLOCK_I)){
             return 'I';
         }
         else {
@@ -74,13 +75,19 @@ public class Block {
         }
     }
 
-    public void draw (Graphics g) {
-
+    public Rectangle getShape(){
+        return shape;
     }
 
     // Printing out this block will just return the char used to ID this block
     @Override
     public String toString(){
-        return ""+id;
+        return ""+ id;
+    }
+
+    // return a copy of this Block
+    @Override
+    public Block clone(){
+        return new Block(color);
     }
 }

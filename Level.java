@@ -5,6 +5,7 @@
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -67,6 +68,7 @@ public class Level extends JComponent implements GameEventListener{
             }
             tubeList.add(tube);
         }
+        assignTubeShape();
     }
 
     // This is where all the drawing to the screen gets done.
@@ -75,6 +77,13 @@ public class Level extends JComponent implements GameEventListener{
     // Other JComponent Objects, such as Buttons are drawn automatically.
     @Override
     public void paintComponent(Graphics g){
+        Graphics2D g2 = (Graphics2D) g.create();
+        Color c1 = ColorScheme.LEVEL_BG_COLOR_1;
+        Color c2 = ColorScheme.LEVEL_BG_COLOR_2;
+
+        g2.setPaint(new GradientPaint(new Point(0, 0), c1, new Point(0, getHeight()), c2));
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        g2.dispose();
 
         // Draw Header with Level info
         g.setColor(Color.DARK_GRAY);
@@ -83,6 +92,26 @@ public class Level extends JComponent implements GameEventListener{
         g.setFont(new Font(Font.DIALOG, Font.PLAIN, 14));
         g.drawString("Best Score:  "+ bestScore, 350, 55);
         g.drawString("Current Score:  "+ currentScore, 340, 72);
+        for (int i = 0; i < tubeList.size(); i++){
+            Rectangle temp = tubeList.get(i).getShape();
+            tubeList.get(i).assignBlockShape();
+            for (int j = 0; j < tubeList.get(i).getFillAmt(); j++){
+                Rectangle tempBlock = tubeList.get(i).getTube().get(j).getShape();
+                g.setColor(tubeList.get(i).getTube().get(j).getColor());
+                g.fillRect(tempBlock.x, tempBlock.y, tempBlock.width, tempBlock.height);
+            }
+            if (tubeList.get(i).isSelected()){
+                ((Graphics2D) g).setStroke(new BasicStroke(5));
+                g.setColor(Color.RED);
+                g.drawRect(temp.x, temp.y, temp.width, temp.height);
+                ((Graphics2D) g).setStroke(new BasicStroke(1));
+            } else {
+                g.setColor(Color.GRAY);
+                g.drawRect(temp.x, temp.y, temp.width, temp.height);
+            }
+
+        }
+
     }
 
     // GameEventListener method
@@ -93,18 +122,160 @@ public class Level extends JComponent implements GameEventListener{
     public void gameEventPerformed(GameEvent event) {
         switch(event.getEventType()){
             case EventType.LEVEL_RESTART:
-                //PLACEHOLDER CODE: Add code to restart the current level
-                System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
+                restart();
                 break;
             case EventType.LEVEL_UNDO:
-                //PLACEHOLDER CODE: Add code to undo the last move
-                System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
+                undo();
                 break;
             case EventType.LEVEL_HINT:
-                //PLACEHOLDER CODE: Add code to get a hint or the next move toward the solution
-                System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
+                hint();
                 break;
         }
+    }
+
+    public void moveBlock(Tube start, Tube end){
+        if (start.isEmpty()){
+            return;
+        }
+        int endSpace = end.getEmptySpace();
+        Color startColor = start.viewTopBlock().getColor();
+        Block tempBlock = end.viewTopBlock();
+        Color endColor;
+        if (tempBlock == null){
+            endColor = startColor;
+        } else {
+            endColor = end.viewTopBlock().getColor();
+        }
+        if (endSpace >= start.getTopColorSize() && (startColor.equals(endColor))){ //if the empty space is sufficient
+            int top = start.getFillAmt() - 1;
+            while (start.viewTopBlock() != null && start.viewTopBlock().getColor().equals(startColor) && top >= 0){
+                Block temp = start.removeTopBlock(); //moves block over
+                end.addBlock(temp);
+                top -= 1;
+                moveList.add(start); // keep track of which tubes have been moved
+                moveList.add(end);
+
+            }
+            currentScore += 1;
+        } else {
+            System.out.println("Color could not be moved");
+        }
+    }
+
+    public void undo(){
+        if (!moveList.isEmpty()) {
+            Tube start = moveList.remove(moveList.size() - 1); //get last item (which is the end of the last move
+            Tube end = moveList.remove(moveList.size() - 1); //start of last move
+            Block temp = start.removeTopBlock(); //moves block over
+            end.addBlock(temp);
+            while (!moveList.isEmpty() && moveList.getLast().equals(start) && moveList.get(moveList.size() - 2).equals(end)){
+                start = moveList.remove(moveList.size() - 1); //get last item (which is the end of the last move
+                end = moveList.remove(moveList.size() - 1); //start of last move
+                temp = start.removeTopBlock(); //moves block over
+                end.addBlock(temp);
+            }
+            //score not decreased, user punished for undo
+        } else {
+            System.out.println("There is no more moves to undo");
+        }
+    }
+
+    public void restart(){
+        if (!moveList.isEmpty()) {
+            while (!moveList.isEmpty()){
+                undo();
+            }
+        } else {
+            System.out.println("There is no more moves to restart");
+        }
+        currentScore = 0;
+    }
+
+    // Attempt to find a solution to this Level in its current form and make the next best move
+    public void hint(){
+        SolveLevel solveLevel = new SolveLevel(this);
+        Point hint = solveLevel.getNextMove();
+        // If solution was found, make the next move, otherwise display popup window
+        if(hint != null){
+            moveBlock(tubeList.get(hint.x), tubeList.get(hint.y));
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "No Hints Available", "Hint", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    public boolean isSolved(){
+        for (int i = 0; i < tubeList.size(); i++){
+            if (!tubeList.get(i).isTubeSolved()){
+                return false;
+            }
+        }
+        if (currentScore < bestScore || bestScore == 0){
+            bestScore = currentScore;
+        }
+        return true;
+    }
+
+    public String levelToText () {
+        int levelId = getId();
+        int bestScore = getBestScore();
+        String firstLine = "@" + levelId + ", " + bestScore + "\n";
+
+        String tubes = "";
+        for (Tube tube : tubeList) {
+            ArrayList<Block> blocks = tube.getTube();
+            for (Block block : blocks) {
+                tubes = tubes.concat(block.toString());
+            }
+            tubes = tubes.concat("\n");
+        }
+
+        return firstLine + tubes + "\n\n";
+    }
+
+    private void assignTubeShape(){
+        int numTubes = tubeList.size();
+        int space = 600 - (10 * (numTubes)); //600 is size of playing space, 10 is space between tubes
+        int sizeTube = space / numTubes;
+
+        int xStart = 100;
+        int yStart = 150;
+
+        for (int i = 0; i < tubeList.size(); i++){
+            Rectangle temp = tubeList.get(i).getShape();
+            temp.setBounds(xStart, yStart, sizeTube, 350);
+            xStart = xStart + sizeTube + 10;
+        }
+    }
+
+    public void mousePressed(MouseEvent e){
+        boolean contains = false;
+        for (int i = 0; i < tubeList.size(); i++){
+            Tube tempTube = tubeList.get(i);
+            Rectangle temp = tempTube.getShape();
+            if (temp.contains(e.getX(), e.getY())){
+                contains = true;
+                if (tempTube.isSelected()){
+                    tempTube.setSelect(false);
+                    return;
+                } else {
+                    for (int j = 0; j < tubeList.size(); j++){
+                        Tube startTube = tubeList.get(j);
+                        if (startTube.isSelected()){
+                            moveBlock(startTube, tempTube);
+                            startTube.setSelect(false);
+                            return;
+                        }
+                    }
+                    if(!tempTube.isEmpty()) {
+                        tempTube.setSelect(true);
+                    }
+
+                }
+                break;
+            }
+        }
+
     }
 
     public int getId(){
@@ -119,82 +290,7 @@ public class Level extends JComponent implements GameEventListener{
         return currentScore;
     }
 
-    public void moveBlock(Tube start, Tube end, boolean undo){
-        int endSpace = end.getEmptySpace();
-        Color startColor = start.viewTopBlock().getColor();
-        if (endSpace >= start.getTopColorSize()){ //if the empty space is sufficient
-            int top = start.getFillAmt() - 1;
-            while (start.viewTopBlock().getColor().equals(startColor) && top >= 0){
-                Block temp = start.removeTopBlock(); //moves block over
-                end.addBlock(temp);
-                top -= 1;
-            }
-            if (!undo){
-                moveList.add(start); // keep track of which tubes have been moved
-                moveList.add(end);
-            }
-            currentScore += 1;
-        } else {
-            System.out.println("Color could not be moved");
-        }
+    public ArrayList<Tube> getTubeList() {
+        return tubeList;
     }
-
-    public void undo(){
-        if (!moveList.isEmpty()) {
-            Tube start = moveList.get(moveList.size() - 1); //get last item (which is the end of the last move
-            Tube end = moveList.get(moveList.size() - 2); //start of last move
-            moveBlock(start, end, true); //so they don't get re-added
-            //score not decreased, user punished for undo
-            moveList.remove(moveList.size() - 1);
-            moveList.remove(moveList.size() - 2);
-        } else {
-            System.out.println("There is no more moves to undo");
-        }
-    }
-
-    public void restart(){
-        if (!moveList.isEmpty()) {
-            while (!moveList.isEmpty()){
-                undo();
-                currentScore -= 1;
-            }
-        } else {
-            System.out.println("There is no more moves to restart");
-        }
-    }
-
-    public boolean isSolved(){
-        for (int i = 0; i < tubeList.size(); i++){
-            if (!tubeList.get(i).isTubeSolved()){
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public String levelToText() {
-        int levelId = getId();
-        int currentScore = getCurrentScore();  //changed best score to currentScore
-        String firstLine = "@" + levelId + ", " + currentScore + "\n";
-
-        String tubes = "";
-        for (Tube tube : tubeList) {
-            ArrayList<Block> blocks = tube.getTube();
-            for (Block block : blocks) {
-                tubes = tubes.concat(block.toString());
-            }
-            tubes = tubes.concat("\n");
-        }
-
-        return firstLine + tubes + "\n\n";
-    }
-
-    public void saveLevelInFile() {
-
-    }
-
-    public void updateBestScore() { //update in levels
-
-    }
-
 }
