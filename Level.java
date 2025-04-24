@@ -292,6 +292,8 @@ public class Level extends JComponent implements GameEventListener{
         this.isSavedLevel = true;
     }
 
+
+    //updated logic; dashes now included
     public String levelToText() {
         isSolved(); //added this to update the best score
         int levelId = getId();
@@ -300,7 +302,7 @@ public class Level extends JComponent implements GameEventListener{
 
         ArrayList<Tube> tubesList = getTubeList();
         String tubes = "";
-        for (Tube tube : tubesList) {
+        for (Tube tube : tubesList) {//
             ArrayList<Block> blocks = tube.getTube();
             if (!tube.isEmpty()){ //if tube NOT empty
                 if (tube.isFull()) { //FULL TUBE
