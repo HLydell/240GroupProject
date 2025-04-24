@@ -471,9 +471,9 @@ public class Game extends JComponent implements GameEventListener, MouseListener
 
         // Update Level info on Win Menu
         Button infoButton = winLevelButtonList.get(0);
-        infoButton.setHeader("Level "+winLevel.getId());
-        infoButton.setLine2("Best Score: "+winLevel.getBestScore());
-        infoButton.setLine3("Current Score: "+winLevel.getCurrentScore());
+        infoButton.setHeader("Level "+ winLevel.getId());
+        infoButton.setLine2("Best Score: "+ winLevel.getBestScore());
+        infoButton.setLine3("Current Score: "+ winLevel.getCurrentScore());
 
         // Update Retry and Next Level Buttons to point to correct Levels
         Button retryButton =  winLevelButtonList.get(1);
@@ -496,7 +496,9 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
+        if (currentLevel != null && currentLevel.isVisible() && currentLevel.isSolved()){
+            gameEventPerformed(new GameEvent(EventType.GOTO_MENU_WIN_LEVEL));
+        }
         // Force the screen to keep re-painting itself in case anything has changed
         revalidate();
         repaint();
@@ -512,6 +514,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
             case GOTO_MENU_MAIN_MENU:
                 //Display Main Menu
                 cardLayout.show(this, mainMenu.getName());
+                currentLevel.restart();
                 break;
             case GOTO_MENU_SELECT_LEVEL:
                 // Update info and Buttons, then display Select Level Menu
@@ -532,6 +535,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
             case GOTO_MENU_WIN_LEVEL:
                 // Update info and Buttons, then display Win Level Menu
                 updateWinMenu();
+                currentLevel.restart();
                 cardLayout.show(this, winLevelMenu.getName());
                 break;
             case GOTO_LEVEL:
@@ -575,7 +579,9 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     @Override
     public void mousePressed(MouseEvent e) {
         // PLACEHOLDER CODE: This just shows how the MouseListener can work.
-        System.out.println("Mouse Pressed at " + e.getX() + ", " + e.getY());
+        if (currentLevel.isVisible()){
+            currentLevel.mousePressed(e);
+        }
     }
 
     // This method is called any time a Mouse button is released down in the Game window.

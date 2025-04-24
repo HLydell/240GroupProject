@@ -1,8 +1,9 @@
-import java.awt.Color;
+import java.awt.*;
 
 public class Block {
     private Color color;
-    private char id; // Single character used to identify Block in files
+    private char id;// Single character used to identify Block in files
+    private Rectangle shape = new Rectangle();
 
     public Block(Color color){
         this.color = color;
@@ -74,9 +75,13 @@ public class Block {
         }
     }
 
+    public Rectangle getShape(){
+        return shape;
+    }
+
     // Printing out this block will just return the char used to ID this block
     @Override
     public String toString(){
-        return ""+id;
+        return ""+ id;
     }
 }
