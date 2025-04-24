@@ -374,37 +374,24 @@ public class Level extends JComponent implements GameEventListener{
             String filename = "levels/levels.lvl";
             ArrayList<String> lines;
             lines = (ArrayList<String>) Files.readAllLines(Paths.get(filename));
-            int startIndex = -1;
-            int endIndex = -1;
+            int lineIndex = -1;
             int levelId = getId();
 
-            //find line with ID and line with dashes
+            //find line with ID
             for (int i = 0; i < lines.size(); i++) {
                 String line = lines.get(i).trim();
-                if (line.startsWith("@" + levelId)) {
-                    startIndex = i;
-                    for (int j = i + 1; j < lines.size(); j++) {
-                        if (lines.get(j).trim().equals("--")) {
-                            endIndex = j;
-                            break;
-                        }
-                    }
-                    break;
+                if (line.startsWith("@" + levelId + ",")) {
+                    lineIndex = i;
                 }
             }
 
             //remove the old lines
-            if (startIndex != -1 && endIndex != -1) {
-                for (int i = endIndex; i >= startIndex; i--) {
-                    lines.remove(i);
-                }
-
-            }
+            lines.remove(lineIndex);
 
             //add new lines
             String[] newLines = levelToText().split("\n");
-            for (int i = newLines.length - 1; i >= 0; i--) {
-                lines.add(startIndex, newLines[i]);
+            for (int i = 0; i < 1; i++) {
+                lines.add(lineIndex, newLines[i]);
             }
 
             //save to file
