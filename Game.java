@@ -176,7 +176,6 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     // Create and arrange Buttons. Add GameEvents to each Button and add this Game as GameEventListener
     public void setupMainMenu(){
         mainMenu = new Menu("Main Menu");
-        mainMenu.setHeader("Block Puzzle Game!");
         mainMenuButtonList = new ArrayList<>();
 
         // Main Menu Buttons
@@ -538,6 +537,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
             case GOTO_MENU_WIN_LEVEL: //when you get here, save best score !!!
                 // Update info and Buttons, then display Win Level Menu
                 updateWinMenu();
+                currentLevel.saveBestScore();
                 currentLevel.restart();
                 cardLayout.show(this, winLevelMenu.getName());
                 break;
@@ -551,9 +551,14 @@ public class Game extends JComponent implements GameEventListener, MouseListener
                 System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
                 // current level: saveLevel()
                 break;
-            case SAVE_LEVEL:  //do stuff here
+            case SAVE_LEVEL:
                 //PLACEHOLDER CODE: Add code to Save a Level
                 System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
+                int slot = event.getEventId();
+                currentLevel.saveToFile(slot);
+                savedLevelList.set(slot, currentLevel);
+
+                cardLayout.show(this, mainMenu.getName());
                 break;
             case RETURN_TO_LEVEL:
                 // Resume playing current Level
