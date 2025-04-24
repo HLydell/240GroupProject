@@ -529,7 +529,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
                 updateSaveLevelMenu();
                 cardLayout.show(this, saveLevelMenu.getName());
                 break;
-            case GOTO_MENU_WIN_LEVEL:
+            case GOTO_MENU_WIN_LEVEL: //when you get here, save best score !!!
                 // Update info and Buttons, then display Win Level Menu
                 updateWinMenu();
                 cardLayout.show(this, winLevelMenu.getName());
@@ -539,11 +539,12 @@ public class Game extends JComponent implements GameEventListener, MouseListener
                 currentLevel = getLevel(event.getEventId());
                 cardLayout.show(this, "Level "+currentLevel.getId());
                 break;
-            case LOAD_LEVEL:
+            case LOAD_LEVEL: //do stuff here
                 //PLACEHOLDER CODE: Add code to Load a saved Level
                 System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
+                // current level: saveLevel()
                 break;
-            case SAVE_LEVEL:
+            case SAVE_LEVEL:  //do stuff here
                 //PLACEHOLDER CODE: Add code to Save a Level
                 System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
                 break;

@@ -172,10 +172,10 @@ public class Level extends JComponent implements GameEventListener{
         return true;
     }
 
-    public String levelToText () {
+    public String levelToText() {
         int levelId = getId();
-        int bestScore = getBestScore();
-        String firstLine = "@" + levelId + ", " + bestScore + "\n";
+        int currentScore = getCurrentScore();  //changed best score to currentScore
+        String firstLine = "@" + levelId + ", " + currentScore + "\n";
 
         String tubes = "";
         for (Tube tube : tubeList) {
@@ -187,6 +187,14 @@ public class Level extends JComponent implements GameEventListener{
         }
 
         return firstLine + tubes + "\n\n";
+    }
+
+    public void saveLevelInFile() {
+
+    }
+
+    public void updateBestScore() { //update in levels
+
     }
 
 }
