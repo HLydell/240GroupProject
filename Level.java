@@ -24,6 +24,7 @@ public class Level extends JComponent implements GameEventListener{
     private int bestScore;
     private int currentScore;
     private ArrayList<Tube> tubeList;
+    private ArrayList<Tube> initialTubes;
     private ArrayList<Tube> moveList;
     private boolean isSavedLevel = false;
 
@@ -34,7 +35,7 @@ public class Level extends JComponent implements GameEventListener{
 
         tubeList = new ArrayList<>(); //hypothetically this allocation would be done as the return of a separate method which reads in from file
         //it could also be within this method, since we would want to assign best score as well.
-
+        initialTubes = new ArrayList<>();
         // Null Layout allows Components like Buttons to be drawn anywhere.
         setLayout(null);
     }
@@ -45,6 +46,7 @@ public class Level extends JComponent implements GameEventListener{
         currentScore = 0;
 
         tubeList = new ArrayList<>();
+        initialTubes = new ArrayList<>(); // Backup copy of the state of the Tubes at the start. Used for Restarting
         moveList = new ArrayList<>();
 
         // Null Layout allows Components like Buttons to be drawn anywhere.
@@ -76,6 +78,11 @@ public class Level extends JComponent implements GameEventListener{
             tubeList.add(tube);
         }
         assignTubeShape();
+
+        // Create a backup of the initial state of the Tubes for Restarting the Level
+        for(Tube tube : tubeList){
+            initialTubes.add(tube.clone());
+        }
     }
 
     // This is where all the drawing to the screen gets done.
@@ -187,15 +194,14 @@ public class Level extends JComponent implements GameEventListener{
         }
     }
 
+    // Reset Level back to initial state and clear score
     public void restart(){
-        if (!moveList.isEmpty()) {
-            while (!moveList.isEmpty()){
-                undo();
-            }
-        } else {
-            System.out.println("There is no more moves to restart");
-        }
         currentScore = 0;
+        moveList.clear();
+        tubeList.clear();
+        for(Tube tube : initialTubes){
+            tubeList.add(tube.clone());
+        }
     }
 
     // Attempt to find a solution to this Level in its current form and make the next best move
@@ -293,11 +299,12 @@ public class Level extends JComponent implements GameEventListener{
     }
 
 
-    //updated logic; dashes now included
-    public String levelToText() {
+    //updated logic; dashes now included.
+    // Pass in which score to save in the file
+    // levels.lvl saves bestScore and save slots save currentScore
+    public String levelToText(int score) {
         isSolved(); //added this to update the best score
         int levelId = getId();
-        int score = getCurrentScore();
         String firstLine = "@" + levelId + "," + score + "\n";
 
         ArrayList<Tube> tubesList = getTubeList();
@@ -329,12 +336,14 @@ public class Level extends JComponent implements GameEventListener{
         return firstLine + tubes + "\n\n";
     }
 
+    // Save the current state of the Level to a Save Slot file
     public void saveToFile(int id) {
         try {
             int saveFileId = id + 1;
             String savePath = "saves/save" + saveFileId + ".lvl";
 
-            String levelText = levelToText();
+            // Save Slot files save Current Score
+            String levelText = levelToText(currentScore);
 
             Files.write(Paths.get(savePath), levelText.getBytes());
             System.out.println("saved file");
@@ -364,7 +373,7 @@ public class Level extends JComponent implements GameEventListener{
             lines.remove(lineIndex);
 
             //add new line with updated best score
-            String[] newLines = levelToText().split("\n");
+            String[] newLines = levelToText(bestScore).split("\n");
             lines.add(lineIndex, newLines[0]);
 
             //save to levels.lvl
@@ -376,16 +385,31 @@ public class Level extends JComponent implements GameEventListener{
         }
     }
 
+    // Create a Level from a Save File
     public static Level loadFromFile(int slot) {
         int saveFileId = slot + 1;
         String filename = "saves/save" + saveFileId + ".lvl";
         try {
             File file = new File(filename);
+
+            // Create the Save file if it does not exist
+            file.createNewFile();
+
             Scanner scanner = new Scanner(file);
-            Level level = new Level(scanner);
-            level.setIsSaved();
-            scanner.close();
-            return level;
+            // Create Level is there is info in the Save file.
+            if(scanner.hasNext()){
+                Level level = new Level(scanner);
+                // Level reads score from file as BestScore. Change to currentScore for Save files
+                level.currentScore = level.bestScore;
+                level.setIsSaved();
+                scanner.close();
+                return level;
+            }
+            else{
+                System.out.println("Couldn't load file");
+                return null;
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("couldn't load level");
@@ -393,4 +417,28 @@ public class Level extends JComponent implements GameEventListener{
         }
     }
 
+    // Set the state of the current Level to match the Saved level
+    public void resumeFromSave(Level savedLevel) {
+        restart();
+        tubeList.clear();
+        currentScore = savedLevel.currentScore;
+        for(Tube tube : savedLevel.tubeList){
+            tubeList.add(tube.clone());
+        }
+        // Calculate Tube and Block sizes and positions for drawing
+        assignTubeShape();
+
+    }
+
+    // Return a copy of this Level and all of its Tubes by value
+    @Override
+    public Level clone(){
+        Level level = new Level(getId());
+        level.currentScore = currentScore;
+        level.bestScore = bestScore;
+        for(Tube tube : tubeList){
+            level.tubeList.add(tube.clone());
+        }
+        return level;
+    }
 }

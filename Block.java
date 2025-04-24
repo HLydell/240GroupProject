@@ -85,9 +85,12 @@ public class Block {
         return ""+ id;
     }
 
-    // return a copy of this Block
+    // return a copy of this Block by value
     @Override
     public Block clone(){
-        return new Block(color);
+        Block clone = new Block(color);
+        clone.id = id;
+        clone.shape = new Rectangle(shape);
+        return clone;
     }
 }

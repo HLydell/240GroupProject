@@ -119,9 +119,12 @@ public class Tube {
         isSelected = selected;
     }
 
+    // Return a copy of this Tube and all of its Blocks by value
     @Override
     public Tube clone(){
         Tube clone = new Tube(maxCapacity);
+        clone.shape = new Rectangle(shape);
+        clone.isSelected = isSelected;
         for (Block block : tube){
             clone.addBlock(block.clone());
         }

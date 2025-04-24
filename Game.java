@@ -126,10 +126,10 @@ public class Game extends JComponent implements GameEventListener, MouseListener
     public void loadSavedLevelsFromFile() {
         savedLevelList = new ArrayList<>();
 
-        // PLACEHOLDER CODE: Adds 3 empty Save slots
-        savedLevelList.add(null);
-        savedLevelList.add(null);
-        savedLevelList.add(null);
+        // Attempt to load 3 save files. Add null to list if file is missing
+        savedLevelList.add(Level.loadFromFile(0));
+        savedLevelList.add(Level.loadFromFile(1));
+        savedLevelList.add(Level.loadFromFile(2));
     }
 
     // Add Buttons with Events to each Level in the List. Used for levelsList and savedLevelList
@@ -546,19 +546,26 @@ public class Game extends JComponent implements GameEventListener, MouseListener
                 currentLevel = getLevel(event.getEventId());
                 cardLayout.show(this, "Level "+currentLevel.getId());
                 break;
-            case LOAD_LEVEL: //do stuff here
-                //PLACEHOLDER CODE: Add code to Load a saved Level
-                System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
-                // current level: saveLevel()
+            case LOAD_LEVEL:
+                // Load a Level from a Save Slot
+                // Go to the unplayed version of the saved Level
+                // Set the unplayed Level's Tubes and Blocks and current score to match the Saved Level's
+                Level savedLevel = savedLevelList.get(event.getEventId());
+                currentLevel = getLevel(savedLevel.getId());
+                currentLevel.resumeFromSave(savedLevel);
+                cardLayout.show(this, "Level "+currentLevel.getId());
                 break;
             case SAVE_LEVEL:
-                //PLACEHOLDER CODE: Add code to Save a Level
-                System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
+                // Save the current state of the Level to a Save slot
                 int slot = event.getEventId();
                 currentLevel.saveToFile(slot);
-                savedLevelList.set(slot, currentLevel);
 
-                cardLayout.show(this, mainMenu.getName());
+                // Add a clone of the Level to the Save list so the info
+                // does not keep getting updated as the level is played
+                savedLevelList.set(slot, currentLevel.clone());
+
+                // Resume playing current Level
+                cardLayout.show(this, "Level "+currentLevel.getId());
                 break;
             case RETURN_TO_LEVEL:
                 // Resume playing current Level
