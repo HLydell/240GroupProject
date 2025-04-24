@@ -448,7 +448,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
 
         // Update Button info to match current Save Slots
         for(int i = 0; i < saveLevelButtonList.size(); i++){
-            Button levelButton = loadLevelButtonList.get(i);
+            Button levelButton = saveLevelButtonList.get(i);
             Level savedLevel = savedLevelList.get(i);
 
             // if Save in this slot does not exist, mark Button as Empty and Deactivate
