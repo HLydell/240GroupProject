@@ -77,6 +77,13 @@ public class Level extends JComponent implements GameEventListener{
     // Other JComponent Objects, such as Buttons are drawn automatically.
     @Override
     public void paintComponent(Graphics g){
+        Graphics2D g2 = (Graphics2D) g.create();
+        Color c1 = ColorScheme.LEVEL_BG_COLOR_1;
+        Color c2 = ColorScheme.LEVEL_BG_COLOR_2;
+
+        g2.setPaint(new GradientPaint(new Point(0, 0), c1, new Point(0, getHeight()), c2));
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        g2.dispose();
 
         // Draw Header with Level info
         g.setColor(Color.DARK_GRAY);
