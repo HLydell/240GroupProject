@@ -94,11 +94,15 @@ public class Level extends JComponent implements GameEventListener{
                 g.fillRect(tempBlock.x, tempBlock.y, tempBlock.width, tempBlock.height);
             }
             if (tubeList.get(i).isSelected()){
+                ((Graphics2D) g).setStroke(new BasicStroke(5));
                 g.setColor(Color.RED);
+                g.drawRect(temp.x, temp.y, temp.width, temp.height);
+                ((Graphics2D) g).setStroke(new BasicStroke(1));
             } else {
                 g.setColor(Color.GRAY);
+                g.drawRect(temp.x, temp.y, temp.width, temp.height);
             }
-            g.drawRect(temp.x, temp.y, temp.width, temp.height);
+
         }
 
     }
@@ -256,7 +260,10 @@ public class Level extends JComponent implements GameEventListener{
                             return;
                         }
                     }
-                    tempTube.setSelect(true);
+                    if(!tempTube.isEmpty()) {
+                        tempTube.setSelect(true);
+                    }
+
                 }
                 break;
             }
