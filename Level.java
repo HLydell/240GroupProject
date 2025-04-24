@@ -6,6 +6,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.nio.file.Files;
@@ -24,6 +25,7 @@ public class Level extends JComponent implements GameEventListener{
     private int currentScore;
     private ArrayList<Tube> tubeList;
     private ArrayList<Tube> moveList;
+    private boolean isSavedLevel = false;
 
     public Level(int id){
         this.id = id;
@@ -282,20 +284,39 @@ public class Level extends JComponent implements GameEventListener{
         return tubeList;
     }
 
+    public boolean getIsSaved() {
+        return isSavedLevel;
+    }
+
+    public void setIsSaved() {
+        this.isSavedLevel = true;
+    }
+
     public String levelToText() {
         isSolved(); //added this to update the best score
         int levelId = getId();
         int score = getCurrentScore();
         String firstLine = "@" + levelId + "," + score + "\n";
 
+        ArrayList<Tube> tubesList = getTubeList();
         String tubes = "";
-        for (Tube tube : tubeList) {
+        for (Tube tube : tubesList) {
             ArrayList<Block> blocks = tube.getTube();
-            if (!tube.isEmpty()){
-                for (Block block : blocks) {
-                    tubes = tubes.concat(block.toString());
+            if (!tube.isEmpty()){ //if tube NOT empty
+                if (tube.isFull()) { //FULL TUBE
+                    for (Block block : blocks) {
+                        tubes = tubes.concat(block.toString());
+                    }
                 }
-            } else {
+                else { //NOT FULL TUBE
+                    for (Block block : blocks) {
+                        tubes = tubes.concat(block.toString());
+                    }
+                    int numDashes = tube.getEmptySpace();
+                    String dashes = "-".repeat(numDashes);
+                    tubes = tubes.concat(dashes);
+                }
+            } else { //COMPLETELY EMPTY TUBE
                 int numDashes = tube.getEmptySpace();
                 String dashes = "-".repeat(numDashes);
                 tubes = tubes.concat(dashes);
@@ -309,64 +330,16 @@ public class Level extends JComponent implements GameEventListener{
     public void saveToFile(int id) {
         try {
             int saveFileId = id + 1;
-            String filename = "saves/save" + saveFileId + ".lvl";
-            ArrayList<String> lines;
-            lines = (ArrayList<String>) Files.readAllLines(Paths.get(filename));
-            int startIndex = -1;
-            int endIndex = -1;
-            int levelId = getId();
+            String savePath = "saves/save" + saveFileId + ".lvl";
 
-            //find line with ID and line with dashes
-            for (int i = 0; i < lines.size(); i++) {
-                String line = lines.get(i).trim();
-                if (line.startsWith("@" + levelId)) {
-                    startIndex = i;
-                    for (int j = i + 1; j < lines.size(); j++) {
-                        if (lines.get(j).trim().equals("--")) {
-                            endIndex = j;
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
+            String levelText = levelToText();
 
-            //remove the old lines
-            if (startIndex != -1 && endIndex != -1) {
-                for (int i = endIndex; i >= startIndex; i--) {
-                    lines.remove(i);
-                }
-
-            }
-
-            //add new lines
-            String[] newLines = levelToText().split("\n");
-            for (int i = newLines.length - 1; i >= 0; i--) {
-                lines.add(startIndex, newLines[i]);
-            }
-
-            //save to file
-            Files.write(Paths.get(filename), lines);
-
+            Files.write(Paths.get(savePath), levelText.getBytes());
+            System.out.println("saved file");
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Couldn't save file");
         }
-    }
-
-    //makes metadata to display on the save slots
-    //might not use this...
-    public ArrayList<String> getMetadata() {
-        ArrayList<String> metadata = new ArrayList<>();
-        int id = getId();
-        int score = getCurrentScore();
-        LocalDate date = LocalDate.now();
-
-        metadata.add(String.valueOf(id));
-        metadata.add(String.valueOf(score));
-        metadata.add(String.valueOf(date));
-
-        return metadata;
     }
 
     public void saveBestScore() {
@@ -388,18 +361,33 @@ public class Level extends JComponent implements GameEventListener{
             //remove the old lines
             lines.remove(lineIndex);
 
-            //add new lines
+            //add new line with updated best score
             String[] newLines = levelToText().split("\n");
-            for (int i = 0; i < 1; i++) {
-                lines.add(lineIndex, newLines[i]);
-            }
+            lines.add(lineIndex, newLines[0]);
 
-            //save to file
+            //save to levels.lvl
             Files.write(Paths.get(filename), lines);
 
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Couldn't save file");
+        }
+    }
+
+    public static Level loadFromFile(int slot) {
+        int saveFileId = slot + 1;
+        String filename = "saves/save" + saveFileId + ".lvl";
+        try {
+            File file = new File(filename);
+            Scanner scanner = new Scanner(file);
+            Level level = new Level(scanner);
+            level.setIsSaved();
+            scanner.close();
+            return level;
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("couldn't load level");
+            return null;
         }
     }
 
