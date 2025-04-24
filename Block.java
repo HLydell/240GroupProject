@@ -84,4 +84,10 @@ public class Block {
     public String toString(){
         return ""+ id;
     }
+
+    // return a copy of this Block
+    @Override
+    public Block clone(){
+        return new Block(color);
+    }
 }

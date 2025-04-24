@@ -121,22 +121,9 @@ public class Level extends JComponent implements GameEventListener{
                 undo();
                 break;
             case EventType.LEVEL_HINT:
-                //PLACEHOLDER CODE: Add code to get a hint or the next move toward the solution
-                System.out.println("(PLACEHOLDER CODE)Event Triggered: "+event);
+                hint();
                 break;
         }
-    }
-
-    public int getId(){
-        return id;
-    }
-
-    public int getBestScore(){
-        return bestScore;
-    }
-
-    public int getCurrentScore(){
-        return currentScore;
     }
 
     public void moveBlock(Tube start, Tube end){
@@ -195,6 +182,19 @@ public class Level extends JComponent implements GameEventListener{
             System.out.println("There is no more moves to restart");
         }
         currentScore = 0;
+    }
+
+    // Attempt to find a solution to this Level in its current form and make the next best move
+    public void hint(){
+        SolveLevel solveLevel = new SolveLevel(this);
+        Point hint = solveLevel.getNextMove();
+        // If solution was found, make the next move, otherwise display popup window
+        if(hint != null){
+            moveBlock(tubeList.get(hint.x), tubeList.get(hint.y));
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "No Hints Available", "Hint", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     public boolean isSolved(){
@@ -269,5 +269,21 @@ public class Level extends JComponent implements GameEventListener{
             }
         }
 
+    }
+
+    public int getId(){
+        return id;
+    }
+
+    public int getBestScore(){
+        return bestScore;
+    }
+
+    public int getCurrentScore(){
+        return currentScore;
+    }
+
+    public ArrayList<Tube> getTubeList() {
+        return tubeList;
     }
 }

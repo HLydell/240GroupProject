@@ -118,4 +118,13 @@ public class Tube {
     public void setSelect(boolean selected){
         isSelected = selected;
     }
+
+    @Override
+    public Tube clone(){
+        Tube clone = new Tube(maxCapacity);
+        for (Block block : tube){
+            clone.addBlock(block.clone());
+        }
+        return clone;
+    }
 }

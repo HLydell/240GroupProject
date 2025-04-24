@@ -568,28 +568,20 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         return null;
     }
 
-    // This method is called any time a Mouse is clicked in the Game window.
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        // PLACEHOLDER CODE: This just shows how the MouseListener can work.
-        System.out.println("Mouse Clicked at " + e.getX() + ", " + e.getY());
-    }
-
     // This method is called any time a Mouse button is pressed down in the Game window.
     @Override
     public void mousePressed(MouseEvent e) {
-        // PLACEHOLDER CODE: This just shows how the MouseListener can work.
+        // pass the MouseEvent to the current level while it is being played
         if (currentLevel.isVisible()){
             currentLevel.mousePressed(e);
         }
     }
 
-    // This method is called any time a Mouse button is released down in the Game window.
     @Override
-    public void mouseReleased(MouseEvent e) {
-        // PLACEHOLDER CODE: This just shows how the MouseListener can work.
-        System.out.println("Mouse Released at " + e.getX() + ", " + e.getY());
-    }
+    public void mouseClicked(MouseEvent e) { }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {}
 
     @Override
     public void mouseEntered(MouseEvent e) {}
