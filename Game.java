@@ -298,36 +298,20 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         backButton.addGameEventListener(this);
         loadLevelMenu.addButton(backButton);
 
-        // PLACEHOLDER data to test Load Menu
-        String [][] placeholderSavedLevels = new String[3][3];
-        // Save Slot 1
-        placeholderSavedLevels[0][0] = "1 (PLACEHOLDER)";
-        placeholderSavedLevels[0][1] = "3";
-        placeholderSavedLevels[0][2] = "04-22-2025 21:53:31";
-        // Save Slot 2
-        placeholderSavedLevels[1][0] = "6 (PLACEHOLDER)";
-        placeholderSavedLevels[1][1] = "46";
-        placeholderSavedLevels[1][2] = "4/22/2025 21:53:31";
-        // Save Slot 3
-        placeholderSavedLevels[2][0] = "18 (PLACEHOLDER)";
-        placeholderSavedLevels[2][1] = "1028";
-        placeholderSavedLevels[2][2] = "12/25/2024";
-
-        // PLACEHOLDER CODE: add 3 Load Save Buttons to Load Level Menu
-        // This code will be replaced when we load Saves from a file
+        // Add Load Buttons with info from Levels in Save Slots
         for(int i = 0; i < savedLevelList.size(); i++){
             Button levelButton;
+            Level savedLevel = savedLevelList.get(i);
 
             // if Save in this slot does not exist, mark Button as Empty and Deactivate
-            if(savedLevelList.get(i) == null){
+            if(savedLevel == null){
                 levelButton =  new Button("Load Save "+(i+1),"[Empty]",
                         300, (i*110)+100,200,100);
                 levelButton.setEnabled(false);
             }
             else {
-                // PLACEHOLDER CODE: Using test data to fill in Saved Level information
-                levelButton =  new Button("Load Save "+(i+1),"Level "+ placeholderSavedLevels[i][0],
-                        "Current Score: "+ placeholderSavedLevels[i][1], placeholderSavedLevels[i][2],
+                levelButton =  new Button("Load Save "+(i+1),"Level "+ savedLevel.getId(),
+                        "Current Score: "+ savedLevel.getCurrentScore(),
                         300, (i*110)+100,200,100);
             }
             levelButton.setGameEvent(new GameEvent(EventType.LOAD_LEVEL, i));
@@ -353,34 +337,18 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         backButton.addGameEventListener(this);
         saveLevelMenu.addButton(backButton);
 
-        // PLACEHOLDER data to test Save Menu
-        String [][] placeholderSavedLevels = new String[3][3];
-        // Save Slot 1
-        placeholderSavedLevels[0][0] = "1 (PLACEHOLDER)";
-        placeholderSavedLevels[0][1] = "3";
-        placeholderSavedLevels[0][2] = "04-22-2025 21:53:31";
-        // Save Slot 2
-        placeholderSavedLevels[1][0] = "6 (PLACEHOLDER)";
-        placeholderSavedLevels[1][1] = "46";
-        placeholderSavedLevels[1][2] = "04/22/2025 21:53:31";
-        // Save Slot 3
-        placeholderSavedLevels[2][0] = "18 (PLACEHOLDER)";
-        placeholderSavedLevels[2][1] = "1028";
-        placeholderSavedLevels[2][2] = "12/25/2024";
-
-        // PLACEHOLDER CODE: add 3 Save Slots Buttons to Save Level Menu
-        // This code will be replaced when we load Saves from a file
+        // Create Save Slot Buttons with info from the Saved progress Levels
         for(int i = 0; i < savedLevelList.size(); i++){
             Button levelButton;
+            Level savedLevel = savedLevelList.get(i);
 
             // if Save in this slot does not exist, mark Button as Empty
-            if(savedLevelList.get(i) == null){
+            if(savedLevel == null){
                 levelButton =  new Button("Save Slot "+(i+1),"[Empty]",300, (i*110)+100,200,100);
             }
             else {
-                // PLACEHOLDER CODE: Using test data to fill in Saved Level information
-                levelButton =  new Button("Save Slot "+(i+1),"Level "+ placeholderSavedLevels[i][0],
-                        "Current Score: "+ placeholderSavedLevels[i][1], placeholderSavedLevels[i][2],
+                levelButton =  new Button("Save Slot "+(i+1),"Level "+ savedLevel.getId(),
+                        "Current Score: "+ savedLevel.getCurrentScore(),
                         300, (i*110)+100,200,100);
             }
             levelButton.setGameEvent(new GameEvent(EventType.SAVE_LEVEL, i));
@@ -453,14 +421,50 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         }
     }
 
-    // PLACEHOLDER CODE: This will update info and Buttons on Load Level Menu with any changes to the Save Games
+    // Update info and Buttons on Load Level Menu with any changes to the Save Games
     public void updateLoadLevelMenu(){
-        // Waiting for Load/Save Levels to Files to be implemented
+
+        // Update Button info to match current Save Slots
+        for(int i = 0; i < loadLevelButtonList.size(); i++){
+            Button levelButton = loadLevelButtonList.get(i);
+            Level savedLevel = savedLevelList.get(i);
+
+            // if Save in this slot does not exist, mark Button as Empty and Deactivate
+            if(savedLevel == null){
+                levelButton.setLine2("[Empty]");
+                levelButton.setLine3("");
+                levelButton.setLine4("");
+                levelButton.setEnabled(false);
+            }
+            else {
+                levelButton.setLine2("Level: "+savedLevel.getId());
+                levelButton.setLine3("Current Score: "+ savedLevel.getCurrentScore());
+                levelButton.setLine4("");
+                levelButton.setEnabled(true);
+            }
+        }
     }
 
-    // PLACEHOLDER CODE: This will update info and Buttons on Save Level Menu with any changes to the Save Games
+    // Update info and Buttons on Save Level Menu with any changes to the Save Games
     public void updateSaveLevelMenu(){
-        // Waiting for Load/Save Levels to Files to be implemented
+
+        // Update Button info to match current Save Slots
+        for(int i = 0; i < saveLevelButtonList.size(); i++){
+            Button levelButton = loadLevelButtonList.get(i);
+            Level savedLevel = savedLevelList.get(i);
+
+            // if Save in this slot does not exist, mark Button as Empty and Deactivate
+            if(savedLevel == null){
+                levelButton.setLine2("[Empty]");
+                levelButton.setLine3("");
+                levelButton.setLine4("");
+            }
+            else {
+                levelButton.setLine2("Level: "+savedLevel.getId());
+                levelButton.setLine3("Current Score: "+ savedLevel.getCurrentScore());
+                levelButton.setLine4("");
+            }
+        }
     }
 
     // Update the info and Buttons on the Win Menu to show Level just played.
