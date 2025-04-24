@@ -6,6 +6,11 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -216,23 +221,6 @@ public class Level extends JComponent implements GameEventListener{
         return true;
     }
 
-    public String levelToText () {
-        int levelId = getId();
-        int bestScore = getBestScore();
-        String firstLine = "@" + levelId + ", " + bestScore + "\n";
-
-        String tubes = "";
-        for (Tube tube : tubeList) {
-            ArrayList<Block> blocks = tube.getTube();
-            for (Block block : blocks) {
-                tubes = tubes.concat(block.toString());
-            }
-            tubes = tubes.concat("\n");
-        }
-
-        return firstLine + tubes + "\n\n";
-    }
-
     private void assignTubeShape(){
         int numTubes = tubeList.size();
         int space = 600 - (10 * (numTubes)); //600 is size of playing space, 10 is space between tubes
@@ -293,4 +281,139 @@ public class Level extends JComponent implements GameEventListener{
     public ArrayList<Tube> getTubeList() {
         return tubeList;
     }
+
+    public String levelToText() {
+        isSolved(); //added this to update the best score
+        int levelId = getId();
+        int score = getCurrentScore();
+        String firstLine = "@" + levelId + "," + score + "\n";
+
+        String tubes = "";
+        for (Tube tube : tubeList) {
+            ArrayList<Block> blocks = tube.getTube();
+            if (!tube.isEmpty()){
+                for (Block block : blocks) {
+                    tubes = tubes.concat(block.toString());
+                }
+            } else {
+                int numDashes = tube.getEmptySpace();
+                String dashes = "-".repeat(numDashes);
+                tubes = tubes.concat(dashes);
+            }
+            tubes = tubes.concat("\n");
+        }
+
+        return firstLine + tubes + "\n\n";
+    }
+
+    public void saveToFile(int id) {
+        try {
+            int saveFileId = id + 1;
+            String filename = "saves/save" + saveFileId + ".lvl";
+            ArrayList<String> lines;
+            lines = (ArrayList<String>) Files.readAllLines(Paths.get(filename));
+            int startIndex = -1;
+            int endIndex = -1;
+            int levelId = getId();
+
+            //find line with ID and line with dashes
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i).trim();
+                if (line.startsWith("@" + levelId)) {
+                    startIndex = i;
+                    for (int j = i + 1; j < lines.size(); j++) {
+                        if (lines.get(j).trim().equals("--")) {
+                            endIndex = j;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            //remove the old lines
+            if (startIndex != -1 && endIndex != -1) {
+                for (int i = endIndex; i >= startIndex; i--) {
+                    lines.remove(i);
+                }
+
+            }
+
+            //add new lines
+            String[] newLines = levelToText().split("\n");
+            for (int i = newLines.length - 1; i >= 0; i--) {
+                lines.add(startIndex, newLines[i]);
+            }
+
+            //save to file
+            Files.write(Paths.get(filename), lines);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Couldn't save file");
+        }
+    }
+
+    //makes metadata to display on the save slots
+    //might not use this...
+    public ArrayList<String> getMetadata() {
+        ArrayList<String> metadata = new ArrayList<>();
+        int id = getId();
+        int score = getCurrentScore();
+        LocalDate date = LocalDate.now();
+
+        metadata.add(String.valueOf(id));
+        metadata.add(String.valueOf(score));
+        metadata.add(String.valueOf(date));
+
+        return metadata;
+    }
+
+    public void saveBestScore() {
+        try {
+            String filename = "levels/levels.lvl";
+            ArrayList<String> lines;
+            lines = (ArrayList<String>) Files.readAllLines(Paths.get(filename));
+            int startIndex = -1;
+            int endIndex = -1;
+            int levelId = getId();
+
+            //find line with ID and line with dashes
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i).trim();
+                if (line.startsWith("@" + levelId)) {
+                    startIndex = i;
+                    for (int j = i + 1; j < lines.size(); j++) {
+                        if (lines.get(j).trim().equals("--")) {
+                            endIndex = j;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            //remove the old lines
+            if (startIndex != -1 && endIndex != -1) {
+                for (int i = endIndex; i >= startIndex; i--) {
+                    lines.remove(i);
+                }
+
+            }
+
+            //add new lines
+            String[] newLines = levelToText().split("\n");
+            for (int i = newLines.length - 1; i >= 0; i--) {
+                lines.add(startIndex, newLines[i]);
+            }
+
+            //save to file
+            Files.write(Paths.get(filename), lines);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Couldn't save file");
+        }
+    }
+
 }
