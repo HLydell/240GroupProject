@@ -33,8 +33,7 @@ public class Level extends JComponent implements GameEventListener{
         bestScore = 0;
         currentScore = 0;
 
-        tubeList = new ArrayList<>(); //hypothetically this allocation would be done as the return of a separate method which reads in from file
-        //it could also be within this method, since we would want to assign best score as well.
+        tubeList = new ArrayList<>();
         initialTubes = new ArrayList<>();
         // Null Layout allows Components like Buttons to be drawn anywhere.
         setLayout(null);
@@ -106,16 +105,16 @@ public class Level extends JComponent implements GameEventListener{
         g.setFont(new Font(Font.DIALOG, Font.PLAIN, 14));
         g.drawString("Best Score:  "+ bestScore, 350, 55);
         g.drawString("Current Score:  "+ currentScore, 340, 72);
-        for (int i = 0; i < tubeList.size(); i++){
+        for (int i = 0; i < tubeList.size(); i++){ //goes through every tube in tubeList
             Rectangle temp = tubeList.get(i).getShape();
-            tubeList.get(i).assignBlockShape();
+            tubeList.get(i).assignBlockShape(); //assigns x,y,width,height coordinates for each block in a tube
             for (int j = 0; j < tubeList.get(i).getFillAmt(); j++){
-                Rectangle tempBlock = tubeList.get(i).getTube().get(j).getShape();
+                Rectangle tempBlock = tubeList.get(i).getTube().get(j).getShape(); //draws each block within a tube
                 g.setColor(tubeList.get(i).getTube().get(j).getColor());
                 g.fillRect(tempBlock.x, tempBlock.y, tempBlock.width, tempBlock.height);
             }
-            if (tubeList.get(i).isSelected()){
-                ((Graphics2D) g).setStroke(new BasicStroke(5));
+            if (tubeList.get(i).isSelected()){ //if selected, gives rectangle red border
+                ((Graphics2D) g).setStroke(new BasicStroke(5)); //cast to Graphics2D object as Graphics does not have stroke size
                 g.setColor(Color.RED);
                 g.drawRect(temp.x, temp.y, temp.width, temp.height);
                 ((Graphics2D) g).setStroke(new BasicStroke(1));
@@ -147,20 +146,21 @@ public class Level extends JComponent implements GameEventListener{
         }
     }
 
+    //moves block from one tube to another tube, if two concurrent blocks are the same colour they are moved at same time
     public void moveBlock(Tube start, Tube end){
-        if (start.isEmpty()){
+        if (start.isEmpty()){ //cannot move if no objects exist
             return;
         }
         int endSpace = end.getEmptySpace();
         Color startColor = start.viewTopBlock().getColor();
         Block tempBlock = end.viewTopBlock();
         Color endColor;
-        if (tempBlock == null){
+        if (tempBlock == null){ //if end tube is empty, end colour is considered to be same as start colour so moving algorithm works
             endColor = startColor;
         } else {
             endColor = end.viewTopBlock().getColor();
         }
-        if (endSpace >= start.getTopColorSize() && (startColor.equals(endColor))){ //if the empty space is sufficient
+        if (endSpace >= start.getTopColorSize() && (startColor.equals(endColor))){ //if the empty space is sufficient and colour matches
             int top = start.getFillAmt() - 1;
             while (start.viewTopBlock() != null && start.viewTopBlock().getColor().equals(startColor) && top >= 0){
                 Block temp = start.removeTopBlock(); //moves block over
@@ -176,12 +176,14 @@ public class Level extends JComponent implements GameEventListener{
         }
     }
 
+    //undo blocks one by one
     public void undo(){
         if (!moveList.isEmpty()) {
-            Tube start = moveList.remove(moveList.size() - 1); //get last item (which is the end of the last move
+            Tube start = moveList.remove(moveList.size() - 1); //get last item (which is the end of the last move)
             Tube end = moveList.remove(moveList.size() - 1); //start of last move
-            Block temp = start.removeTopBlock(); //moves block over
+            Block temp = start.removeTopBlock(); //move first block over
             end.addBlock(temp);
+            //if there is any additional block moves that are the same as previous undo as well (they were moved in same 'move')
             while (!moveList.isEmpty() && moveList.getLast().equals(start) && moveList.get(moveList.size() - 2).equals(end)){
                 start = moveList.remove(moveList.size() - 1); //get last item (which is the end of the last move
                 end = moveList.remove(moveList.size() - 1); //start of last move
@@ -217,20 +219,22 @@ public class Level extends JComponent implements GameEventListener{
         }
     }
 
+    //goes through all tubes in tubeList and sees if they are solved
     public boolean isSolved(){
         for (int i = 0; i < tubeList.size(); i++){
             if (!tubeList.get(i).isTubeSolved()){
                 return false;
             }
         }
-        if (currentScore < bestScore || bestScore == 0){
+        if (currentScore < bestScore || bestScore == 0){ //updates best score if they have won
             bestScore = currentScore;
         }
         return true;
     }
 
+    //assigns coordinates to the rectangle object within a tube, in order to draw them properly to screen
     private void assignTubeShape(){
-        int numTubes = tubeList.size();
+        int numTubes = tubeList.size(); //size of tubes depends on number of tubes, gets smaller when there is more tubes
         int space = 600 - (10 * (numTubes)); //600 is size of playing space, 10 is space between tubes
         int sizeTube = space / numTubes;
 
@@ -250,15 +254,14 @@ public class Level extends JComponent implements GameEventListener{
             Tube tempTube = tubeList.get(i);
             Rectangle temp = tempTube.getShape();
             if (temp.contains(e.getX(), e.getY())){
-                contains = true;
-                if (tempTube.isSelected()){
+                if (tempTube.isSelected()){ //if tube is already selected, and it is selected again, unselect it
                     tempTube.setSelect(false);
                     return;
                 } else {
                     for (int j = 0; j < tubeList.size(); j++){
-                        Tube startTube = tubeList.get(j);
+                        Tube startTube = tubeList.get(j); //if there is another tube already selected when we select a new tube
                         if (startTube.isSelected()){
-                            moveBlock(startTube, tempTube);
+                            moveBlock(startTube, tempTube); //move block from pre-selected tube to current tube
                             startTube.setSelect(false);
                             return;
                         }

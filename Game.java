@@ -378,7 +378,7 @@ public class Game extends JComponent implements GameEventListener, MouseListener
         Level level = levelList.get(0);
 
         // Use a Deactivated Button to display Level information
-        Button levelInfo = new Button("Level "+level.getId(), "Best Score: "+level.getBestScore(),
+        Button levelInfo = new Button("Level "+ level.getId(), "Best Score: "+level.getBestScore(),
                 "Current Score: "+level.getCurrentScore(), 300, 25,200,125);
         levelInfo.setEnabled(false);
         levelInfo.setContentAreaFilled(false);

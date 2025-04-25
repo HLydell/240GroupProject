@@ -8,7 +8,7 @@ public class Tube {
 
     //init value of 10 if no size is specified
     public Tube(){
-        this.maxCapacity = 10;
+        this.maxCapacity = 12;
     }
 
     //allows for defining size
@@ -76,14 +76,15 @@ public class Tube {
         return shape;
     }
 
+    //assigns coordinates to the rectangle object within each block in tube, in order to draw them properly to screen
     public void assignBlockShape(){
         int numBlocks = maxCapacity;
-        int sizeBlock = 350/numBlocks; //vertical size of block, 350 size of tube
+        int sizeBlock = 350/numBlocks; //vertical size of block, 350 size of tube. Due to integer division there will occasionally be extra room in tube
 
         int xStart = shape.x;
         int yStart = shape.y + 350;
 
-        for (int i = 0; i < tube.size(); i++){
+        for (int i = 0; i < tube.size(); i++){ //tubes are drawn from bottom up since start of arraylist is bottom of tube
             yStart -= sizeBlock;
             Rectangle temp = tube.get(i).getShape();
             temp.setBounds(xStart, yStart, shape.width, sizeBlock);
@@ -109,10 +110,6 @@ public class Tube {
 
     public boolean isSelected(){
         return isSelected;
-    }
-
-    public void changeSelect(){
-        isSelected = !isSelected;
     }
 
     public void setSelect(boolean selected){

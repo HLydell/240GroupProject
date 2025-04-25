@@ -5,11 +5,13 @@ public class Block {
     private char id;// Single character used to identify Block in files
     private Rectangle shape = new Rectangle();
 
+    //Constructor for block that assigns a given color object to color variable
     public Block(Color color){
         this.color = color;
         this.id = convertColorToChar(color);
     }
 
+    //Constructor for block that turns a given colour id (as a char) into a color object
     public Block(char id){
         this.color = convertCharToColor(id);
         this.id = id;
@@ -75,6 +77,7 @@ public class Block {
         }
     }
 
+    //returns the rectangle object within shape variable
     public Rectangle getShape(){
         return shape;
     }
